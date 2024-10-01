@@ -1,0 +1,19 @@
+.error-container {
+    box-sizing: border-box;
+    padding: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-title {
+    color: #2c3e50;
+    font-size: 150px;
+    margin: 20px;
+}
+
+.error-text {
+    font-size: 24px;
+    color: red;
+}

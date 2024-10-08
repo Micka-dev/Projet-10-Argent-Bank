@@ -4,6 +4,20 @@
     flex: 1;
 }
 
+.redirection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: red;
+    margin: 2rem;
+}
+
+.redirection h2 {
+    color: black;
+}
+
 .bg-dark {
     background-color: #12002b;
 }

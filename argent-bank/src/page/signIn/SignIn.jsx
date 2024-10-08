@@ -1,10 +1,18 @@
-import './signIn.css'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+
+import './signIn.css'
 
 import axios from 'axios'
 
+import { logIn } from '../../actions/user.actions'
+
+import { getUserInfos } from '../../actions/user.actions'
+
 function SignIn() {
+  const dispatch = useDispatch()
+
   // Gère l'état local du composant et met à jour les valeurs des champs de formulaire (email & mot de passe) en utilisant name et value
   const [formData, setFormData] = useState({
     email: '',
@@ -25,10 +33,9 @@ function SignIn() {
 
   const navigate = useNavigate()
 
+  // Fonction qui vérifie la validité du token
   function isTokenValid(token) {
     // Transformation du "token" en tableau afin de récupérer par la suite le header, le payload et la signature de manière indépendante
-    console.log(token)
-
     const arrayToken = token.split('.')
     // Décodage de la chaîne de données (codée en encodage Base64) grâce à la fonction atob() ; et je pare les données avec JSON.parse() pour qu'elles deviennent un objet JavaScript ; ce qui va me permettre de récupérer le timestamp d'expiration du token contenu dans l'objet
     const tokenPayLoad = JSON.parse(atob(arrayToken[1]))
@@ -51,7 +58,7 @@ function SignIn() {
     }
   }
 
-  // Fonction qui gère la soumission du formulaire, elle appelle l'API pour tenter de se connecter ; ellerécupère le token et le stocke dans le localStorage si l'authentification est correcte et redirige vers le dashboard ; elle affiche une erreur dans le cas contraire
+  // Fonction qui gère la soumission du formulaire, elle appelle l'API pour tenter de se connecter ; elle récupère le token et le stocke dans le localStorage si l'authentification est correcte et redirige vers le dashboard ; elle affiche une erreur dans le cas contraire
   const handleSignIn = async () => {
     try {
       const response = await axios.post(
@@ -63,41 +70,24 @@ function SignIn() {
           },
         }
       )
+
       if (response.status === 200) {
-        console.log(response.data)
         // Pas besoin de convertir la donnée data en JSON avec AXIOS
         window.localStorage.setItem('token', response.data.body.token)
         if (isLogged()) {
           // Redirige l'utilisateur vers le tableau de bord
           navigate('/dashboard')
+          // Fais appel à l'action logIn pour passer le loggedIn à true dans le store (= utilisateur connecté)
+          dispatch(logIn(true))
+          dispatch(getUserInfos())
         }
       }
     } catch (error) {
-      console.log(error)
+      console.log('error call login', error)
       setError('Vos identifiants sont incorrects.')
+      // dispatch(logIn(false))
     }
   }
-
-  // ===>  Code commenté car mon mentor voulait que je vois axios pour les requêtes
-  // const handleSignIn = async () => {
-  //   const response = await fetch('http://localhost:3001/api/v1/user/login', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify(formData),
-  //   })
-
-  //   const data = await response.json()
-  //   if (response.status === 200) {
-  //     window.localStorage.setItem('token', data.body.token)
-  //     if (isLogged()) {
-  //       navigate('/dashboard')
-  //     }
-  //   } else {
-  //     alert('Identifiants incorrects.')
-  //   }
-  // }
 
   return (
     <main className="main bg-dark">

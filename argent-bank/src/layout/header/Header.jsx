@@ -1,18 +1,27 @@
-import { useState } from 'react'
+// import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
-import Logo from '../../assets/images/argentBankLogo.png'
+import Logo from '../../assets/images/argentBankLogo.webp'
 import './header.css'
 
-function Header() {
-  // true pour tester le css =>après remettre à false
-  const [isLogged, setisLogged] = useState(true)
+import { useDispatch, useSelector } from 'react-redux'
 
-  const userName = 'Micka'
+import { logIn, openEditForm } from '../../actions/user.actions'
+
+function Header() {
+  const user = useSelector((state) => state.user)
+
+  const dispatch = useDispatch()
+
+  // Le code suivant est compatible avec toutes les versions JS (ES5 et ultérieures)
+  // const isLogged = user && user.loggedIn
+  // Le code suivant supporte ES2020 ou une transpilation avec Babel ou un autre outil pour les environnements plus anciens
+  const isLogged = user?.loggedIn
 
   const handleSignOut = () => {
     localStorage.removeItem('token')
-    setisLogged(false)
+    dispatch(logIn(false))
+    dispatch(openEditForm(false))
   }
 
   return (
@@ -26,7 +35,7 @@ function Header() {
         <h1 className="sr-only">Argent Bank</h1>
       </NavLink>
       <div>
-        {!isLogged ? (
+        {isLogged === false ? (
           // Lien qui permet de se diriger vers la page sign-in
           <NavLink className="main-nav-item" to="/sign-in">
             <i className="fa fa-user-circle"></i>
@@ -34,11 +43,10 @@ function Header() {
           </NavLink>
         ) : (
           <>
-            {/* Permet de recharger la page en faisant une nouvelle requête */}
             <NavLink to="/dashboard" className="main-nav-item">
               <i className="fa fa-user-circle"></i>
-              {userName}
-              <i class="fa-solid fa-gear"></i>
+              {user.getUserInfos.userName}
+              <i className="fa-solid fa-gear"></i>
             </NavLink>
             {/* Permet de se déconnecter et de retourner à la page sign-in */}
             <NavLink

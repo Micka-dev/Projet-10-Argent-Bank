@@ -7,7 +7,6 @@ import './signIn.css'
 import axios from 'axios'
 
 import { logIn } from '../../actions/user.actions'
-
 import { getUserInfos } from '../../actions/user.actions'
 
 function SignIn() {
@@ -79,13 +78,13 @@ function SignIn() {
           navigate('/dashboard')
           // Fais appel à l'action logIn pour passer le loggedIn à true dans le store (= utilisateur connecté)
           dispatch(logIn(true))
+          // Fais appel à l'action getUserInfos pour remplir le store avec les infos utilisateur
           dispatch(getUserInfos())
         }
       }
     } catch (error) {
       console.log('error call login', error)
       setError('Vos identifiants sont incorrects.')
-      // dispatch(logIn(false))
     }
   }
 

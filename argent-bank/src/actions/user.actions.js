@@ -5,7 +5,7 @@ export const OPEN_USER_EDIT_FORM = 'OPEN_USER_EDIT_FORM'
 export const GET_USER_INFOS = 'GET_USER_INFOS'
 export const EDIT_USER_INFOS = 'EDIT_USER_INFOS'
 
-// Gestion de l'état de connection (store)
+// Gestion de l'état de connexion (store)
 export const logIn = (data) => {
   return (dispatch) => dispatch({ type: LOG_IN, payload: data })
 }

@@ -1,10 +1,8 @@
-// import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Logo from '../../assets/images/argentBankLogo.webp'
 import './header.css'
-
-import { useDispatch, useSelector } from 'react-redux'
 
 import { logIn, openEditForm } from '../../actions/user.actions'
 
@@ -46,8 +44,8 @@ function Header() {
             <NavLink to="/dashboard" className="main-nav-item">
               <i className="fa fa-user-circle"></i>
               {user.getUserInfos.userName}
-              <i className="fa-solid fa-gear"></i>
             </NavLink>
+            <i className="fa-solid fa-gear"></i>
             {/* Permet de se déconnecter et de retourner à la page sign-in */}
             <NavLink
               to="/sign-in"

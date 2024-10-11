@@ -14,7 +14,7 @@ const initialState = {
 export function userReducer(state = initialState, action) {
   switch (action.type) {
     case LOG_IN:
-      return { ...state, loggedIn: action.payload }
+      return { ...state, loggedIn: action.payload, getUserInfos: '' }
 
     case OPEN_USER_EDIT_FORM:
       return { ...state, openedUserEditForm: action.payload }

@@ -1,27 +1,21 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-
 import './signIn.css'
-
 import axios from 'axios'
-
-import { logIn } from '../../actions/user.actions'
-import { getUserInfos } from '../../actions/user.actions'
+import { getUserInfos, userSlice } from '../../slices/userSlice'
 
 function SignIn() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
 
-  // Gère l'état local du composant et met à jour les valeurs des champs de formulaire (email & mot de passe) en utilisant name et value
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
 
-  // Gère l'état erreur
-  const [error, setError] = useState('')
-
-  // Gère les changements dans les champs du formulaire
+  // Fonction qui met à jour les valeurs des champs de formulaire
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData({
@@ -30,17 +24,11 @@ function SignIn() {
     })
   }
 
-  const navigate = useNavigate()
-
-  // Fonction qui vérifie la validité du token
+  // Fonction qui vérifie la validité du token JWT
   function isTokenValid(token) {
-    // Transformation du "token" en tableau afin de récupérer par la suite le header, le payload et la signature de manière indépendante
     const arrayToken = token.split('.')
-    // Décodage de la chaîne de données (codée en encodage Base64) grâce à la fonction atob() ; et je pare les données avec JSON.parse() pour qu'elles deviennent un objet JavaScript ; ce qui va me permettre de récupérer le timestamp d'expiration du token contenu dans l'objet
     const tokenPayLoad = JSON.parse(atob(arrayToken[1]))
-    // Déclaration de la variable "now" correspondant au timestamp au moment T (la fonction getTime() permet de donner le timestamp)
     const now = Math.floor(new Date().getTime() / 1000)
-    // Condition permettant de controler si le token est toujours valide (on récupére le timestamp du payload)
     if (now <= tokenPayLoad.exp) {
       return true
     } else {
@@ -48,7 +36,7 @@ function SignIn() {
     }
   }
 
-  // Fonction qui permet de vérifier que  l'utilisateur est bien logged
+  // Fonction qui permet de vérifier que l'utilisateur est bien logged
   function isLogged() {
     if (isTokenValid(localStorage.getItem('token'))) {
       return true
@@ -57,7 +45,7 @@ function SignIn() {
     }
   }
 
-  // Fonction qui gère la soumission du formulaire, elle appelle l'API pour tenter de se connecter ; elle récupère le token et le stocke dans le localStorage si l'authentification est correcte et redirige vers le dashboard ; elle affiche une erreur dans le cas contraire
+  // Fonction asynchrone qui gère le processus de connexion lorsque l'utilisateur soumet le formulaire
   const handleSignIn = async () => {
     try {
       const response = await axios.post(
@@ -69,22 +57,81 @@ function SignIn() {
           },
         }
       )
-
       if (response.status === 200) {
-        // Pas besoin de convertir la donnée data en JSON avec AXIOS
         window.localStorage.setItem('token', response.data.body.token)
         if (isLogged()) {
-          // Redirige l'utilisateur vers le tableau de bord
-          navigate('/dashboard')
-          // Fais appel à l'action logIn pour passer le loggedIn à true dans le store (= utilisateur connecté)
-          dispatch(logIn(true))
-          // Fais appel à l'action getUserInfos pour remplir le store avec les infos utilisateur
-          dispatch(getUserInfos())
+          try {
+            dispatch(userSlice.actions.logIn(true))
+            await dispatch(getUserInfos()).unwrap()
+            navigate('/dashboard')
+          } catch (error) {
+            console.log('Error in getUserInfos:', error)
+            if (error.status) {
+              const status = error.status
+              switch (status) {
+                case 400:
+                  setError(
+                    'Requête invalide. Veuillez vérifier les informations saisies et réessayer.'
+                  )
+                  break
+                case 401:
+                  setError('Non autorisé. Veuillez vous connecter.')
+                  break
+                case 403:
+                  setError(
+                    "Accès interdit. Vous n'avez pas les droits nécessaires."
+                  )
+                  break
+                case 404:
+                  setError(
+                    "Ressource non trouvée. Vérifiez l'URL ou essayez plus tard."
+                  )
+                  break
+                case 500:
+                  setError('Erreur interne du serveur. Réessayez plus tard.')
+                  break
+                default:
+                  setError('Erreur réseau. Vérifiez votre connexion.')
+              }
+            } else {
+              console.log('Error.status is undefined')
+              setError('Une erreur est survenue. Veuillez réessayer plus tard.')
+            }
+          }
         }
       }
     } catch (error) {
-      console.log('error call login', error)
-      setError('Vos identifiants sont incorrects.')
+      console.log('Error in login:', error)
+      if (error.response) {
+        const status = error.response.status
+        console.log('Error response status:', status)
+        switch (status) {
+          case 400:
+            setError(
+              'Requête invalide. Veuillez vérifier vos identifiants et réessayer.'
+            )
+            break
+          case 401:
+            setError('Non autorisé. Veuillez vous connecter.')
+            break
+          case 403:
+            setError("Accès interdit. Vous n'avez pas les droits nécessaires.")
+            break
+          case 404:
+            setError(
+              "Ressource non trouvée. Vérifiez l'URL ou essayez plus tard."
+            )
+            break
+          case 500:
+            setError('Erreur interne du serveur. Réessayez plus tard.')
+            break
+          default:
+            setError('Erreur réseau. Vérifiez votre connexion.')
+        }
+      } else {
+        console.log('Error response is undefined')
+        setError('Une erreur est survenue. Veuillez réessayer plus tard.')
+      }
     }
   }
 
@@ -123,7 +170,7 @@ function SignIn() {
           <button
             type="button"
             className="sign-in-button"
-            // Fonction 'handleSignIn' appelée lors du clic sur le bouton 'sign in'
+            // Fonction 'handleSignIn' appelée lors du clic sur le bouton 'Sign In'
             onClick={handleSignIn}
           >
             Sign In

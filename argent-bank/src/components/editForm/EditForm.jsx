@@ -3,28 +3,58 @@ import { useState } from 'react'
 
 import './editForm.css'
 
-import { editUserInfos, openEditForm } from '../../actions/user.actions'
+import { editUserInfos, userSlice } from '../../slices/userSlice'
 
 function EditForm() {
   const user = useSelector((state) => state.user)
 
-  const [editedUserName, setEditedUserName] = useState(
-    user.getUserInfos.userName
-  )
+  const [editedUserName, setEditedUserName] = useState(user.userInfos.userName)
+
+  const [error, setError] = useState('')
 
   const dispatch = useDispatch()
 
-  const handleSaveButton = (e) => {
+  const handleSaveButton = async (e) => {
     e.preventDefault()
-
-    dispatch(editUserInfos(editedUserName))
-    dispatch(openEditForm(false))
+    try {
+      await dispatch(editUserInfos(editedUserName)).unwrap()
+      dispatch(userSlice.actions.openEditForm(false))
+    } catch (error) {
+      console.log('Error in editUserInfos:', error)
+      if (error.status) {
+        const status = error.status
+        switch (status) {
+          case 400:
+            setError(
+              'Requête invalide. Veuillez vérifier les informations saisies et réessayer.'
+            )
+            break
+          case 401:
+            setError('Non autorisé. Veuillez vous connecter.')
+            break
+          case 403:
+            setError("Accès interdit. Vous n'avez pas les droits nécessaires.")
+            break
+          case 404:
+            setError(
+              "Ressource non trouvée. Vérifiez l'URL ou essayez plus tard."
+            )
+            break
+          case 500:
+            setError('Erreur interne du serveur. Réessayez plus tard.')
+            break
+          default:
+            setError('Erreur réseau. Vérifiez votre connexion.')
+        }
+      } else {
+        setError('Une erreur est survenue. Veuillez réessayer plus tard.')
+      }
+    }
   }
 
   const handleCancelButton = (e) => {
     e.preventDefault()
-
-    dispatch(openEditForm(false))
+    dispatch(userSlice.actions.openEditForm(false))
   }
 
   return (
@@ -45,7 +75,7 @@ function EditForm() {
           className="form-input non-editable-field"
           type="text"
           placeholder="First Name"
-          value={user.getUserInfos.firstName}
+          value={user.userInfos.firstName}
           readOnly
         />
       </div>
@@ -55,7 +85,7 @@ function EditForm() {
           className="form-input non-editable-field"
           type="text"
           placeholder="Last Name"
-          value={user.getUserInfos.lastName}
+          value={user.userInfos.lastName}
           readOnly
         />
       </div>
@@ -71,6 +101,7 @@ function EditForm() {
           Cancel
         </button>
       </div>
+      {error && <p className="error-message">{error}</p>}
     </form>
   )
 }

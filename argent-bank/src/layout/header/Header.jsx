@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Logo from '../../assets/images/argentBankLogo.webp'
 import './header.css'
 
-import { logIn, openEditForm } from '../../actions/user.actions'
+import { userSlice } from '../../slices/userSlice'
 
 function Header() {
   const user = useSelector((state) => state.user)
@@ -18,8 +18,9 @@ function Header() {
 
   const handleSignOut = () => {
     localStorage.removeItem('token')
-    dispatch(logIn(false))
-    dispatch(openEditForm(false))
+
+    dispatch(userSlice.actions.logIn(false))
+    dispatch(userSlice.actions.openEditForm(false))
   }
 
   return (
@@ -41,9 +42,10 @@ function Header() {
           </NavLink>
         ) : (
           <>
+            {/* Lien qui permet de se diriger vers la page dashboard quand connecté */}
             <NavLink to="/dashboard" className="main-nav-item">
               <i className="fa fa-user-circle"></i>
-              {user.getUserInfos.userName}
+              {user.userInfos.userName}
             </NavLink>
             <i className="fa-solid fa-gear"></i>
             {/* Permet de se déconnecter et de retourner à la page sign-in */}

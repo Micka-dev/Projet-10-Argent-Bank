@@ -8,7 +8,7 @@ import accountData from '../../datas/accountsData.json'
 import EditForm from '../../components/editForm/EditForm'
 import Account from '../../components/account/Acoount'
 
-import { openEditForm } from '../../actions/user.actions'
+import { userSlice } from '../../slices/userSlice'
 
 function Dashboard() {
   const user = useSelector((state) => state.user)
@@ -16,10 +16,10 @@ function Dashboard() {
   const dispatch = useDispatch()
 
   const isEditFormOpened = user.openedUserEditForm
+  const userName = user.userInfos.userName
 
-  const userName = user.getUserInfos.userName
-
-  const handleOpeningStatus = () => dispatch(openEditForm(true))
+  const handleOpeningStatus = () =>
+    dispatch(userSlice.actions.openEditForm(true))
 
   // CODE pour éviter l'accès sans authorisation au dashboard quand on tape directement l'URL ou le retour en arrière dans le navigateur !
   const navigate = useNavigate()
@@ -52,6 +52,7 @@ function Dashboard() {
           <EditForm />
         )}
         <section className="account-content">
+          {/* Parcourt les données des comptes et rend un composant Account pour chaque entrée */}
           {accountData.map((data) => (
             <Account
               key={data.id}

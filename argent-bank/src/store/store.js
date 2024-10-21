@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import { userReducer } from '../reducers/userReducer'
+import { userSlice } from '../slices/userSlice'
 
 let state = {}
 
 export const store = configureStore({
   preloadedState: state,
   reducer: {
-    user: userReducer,
+    user: userSlice.reducer,
   },
 })

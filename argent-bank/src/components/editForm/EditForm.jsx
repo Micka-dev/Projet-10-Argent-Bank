@@ -16,6 +16,10 @@ function EditForm() {
 
   const handleSaveButton = async (e) => {
     e.preventDefault()
+    if (!editedUserName) {
+      setError('You have not filled in your user name, please edit it.')
+      return
+    }
     try {
       await dispatch(editUserInfos(editedUserName)).unwrap()
       dispatch(userSlice.actions.openEditForm(false))
@@ -25,9 +29,7 @@ function EditForm() {
         const status = error.status
         switch (status) {
           case 400:
-            setError(
-              'Requête invalide. Veuillez vérifier les informations saisies et réessayer.'
-            )
+            setError('Veuillez vérifier les informations saisies et réessayer.')
             break
           case 401:
             setError('Non autorisé. Veuillez vous connecter.')
